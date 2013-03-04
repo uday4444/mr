@@ -1,0 +1,1 @@
+https://github.com/openstack/nova/archive/folsom-rc3.zip#egg=nova-2012.2
