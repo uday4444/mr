@@ -1,1 +1,5 @@
 apt-get install libxml2-dev libxslt-dev
+
+SEE:
+- <https://github.com/openstack/oslo-incubator>
+- <https://github.com/openstack/oslo-config.git>
