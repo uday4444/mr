@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from oslo.config import cfg
-#from openstack.common import jsonutils
 import openstack.common.rpc.proxy
+#from openstack.common import jsonutils
 
 CONF = cfg.CONF
 
 class MaprAPI(openstack.common.rpc.proxy):
-    """ Client side of the mapr """
+    ''' Client side of the mapr '''
 
     BASE_RPC_API_VERSION = '1.0'
 

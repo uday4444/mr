@@ -21,6 +21,7 @@ long description""",
       include_package_data=True,
       zip_safe=False,
       install_requires=[
+          'python-novaclient',
       ],
       dependency_links=dependency_links,
       entry_points="""
