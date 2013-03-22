@@ -7,7 +7,11 @@ from openstack.common.db.sqlalchemy.session import get_session
 from openstack.common.exception import NotFound
 
 from forest.db.sqlclchemy import models
-from forest.common import crypt
+
+
+def _session(context):
+    ''' Get session from context '''
+    return (context and context.session) or get_session()
 
 
 def model_query(context, model, *args, **kwargs):
@@ -47,13 +51,9 @@ def model_query(context, model, *args, **kwargs):
     return query
 
 
-def _session(context):
-    return (context and context.session) or get_session()
-
-
 def job_workflow_get(context, job_workflow_id):
     '''
-    If is_admin flag is False, 
+    If is_admin flag is False,
     we only allow retrieval of a specific stack in the tenant scoping
     '''
     result = model_query(context, models.JobWorkflow).get(job_workflow_id)
@@ -66,16 +66,16 @@ def job_workflow_get(context, job_workflow_id):
 
 
 def job_workflow_get_all(context, tenant_only=True):
-    results = (model_query(context, models.JobWorkflow,
-                           read_deleted='no', tenant_only=tenant_only)
-               .filter_by(owner_id=None).all())
+    results = model_query(context, models.JobWorkflow,
+                           read_deleted='no', tenant_only=tenant_only). \
+              filter_by(owner_id=None).all()
     return results
 
 
 def job_workflow_get_all_by_tenant(context):
-    results = (model_query(context, models.JobWorkflow, read_deleted='no')
-               .filter_by(owner_id=None)
-               .filter_by(tenant_id=context.tenant_id).all())
+    results = model_query(context, models.JobWorkflow, read_deleted='no'). \
+              filter_by(owner_id=None). \
+              filter_by(tenant_id=context.tenant_id).all()
     return results
 
 
@@ -101,16 +101,18 @@ def job_workflow_delete(context, job_workflow_id):
     if not job_workflow:
         raise NotFound('Attempt to update a job workflow with id: %s '
                        'that does not exist' % job_workflow_id)
-
     # get object session
     session = Session.object_session(job_workflow)
     session.delete(job_workflow.user_creds) # FIXME Maybe we do not need it
     job_workflow.soft_delete()
     session.flush()
 
+
 #
-# FIXME Maybe we need a ** Super User ** instread save user creds
+# FIXME Maybe we need a ** Super User ** instread of saving user creds
 #
+from forest.common import crypt # FIXME
+
 
 def user_creds_create(context):
     values = context.to_dict()
