@@ -3,28 +3,6 @@
 import netaddr
 
 
-class LazyPluggable(object):
-    ''' A pluggable backend loaded lazily based on some value. '''
-
-    def __init__(self, pivot, config_group=None, **backends):
-        self._backends = backends
-        self._pivot = pivot
-        self._backend = None
-        self._config_group = config_group
-
-    def _get_backend(self):
-        if not self._backend:
-            if self._config_group is None:
-                backend_name = CONF[self._pivot]
-            else:
-                backend_name = CONF[self._config_group][self._pivot]
-
-            if backend_name not in self._backends:
-                raise except.
-
-
-
-
 def is_valid_ipv4(address):
     ''' Verify that address represents a valid IPv4 address '''
     try:
