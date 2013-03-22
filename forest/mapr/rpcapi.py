@@ -6,6 +6,7 @@ import openstack.common.rpc.proxy
 
 CONF = cfg.CONF
 
+
 class MaprAPI(openstack.common.rpc.proxy):
     ''' Client side of the mapr '''
 

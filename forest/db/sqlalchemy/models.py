@@ -89,7 +89,7 @@ class JobWorkflow(BASE, ForestBase, models.SoftDeleteMixin):
     # Hadoop cluster info
     access_ipaddress = Column(types.IPAddress())
 
-    state = Column(Integer) # FIXME default value
+    state = Column(Integer)  # FIXME default value
     scheduled_at = Column(DateTime)
     launched_at = Column(DateTime)
     terminated_at = Column(DateTime)
@@ -110,7 +110,7 @@ class JobWorkflow(BASE, ForestBase, models.SoftDeleteMixin):
         ForeignKey('user_creds.id'),
         nullable=False)
 
-    nodes_info = Column(Text) # TODO: storing json object ?
+    nodes_info = Column(Text)  # TODO: storing json object ?
 
 
 # TODO: Whether it is the only appropriate way

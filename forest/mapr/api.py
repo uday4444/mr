@@ -10,15 +10,15 @@ from forest.mapr import manager
 from forest.mapr import rpcapi
 
 mapr_opts = [
-        cfg.BoolOpt('use_local',
-                    default=True,
-                    help='Perform forest.mapr operations locally'),
-        cfg.StrOpt('topic',
-                   default='mapr',
-                   help='the topic mapr nodes listen on'),
-        cfg.StrOpt('manager',
-                   default='nova.forest.manager.MaprManager',
-                   help='full class name for the Manager for Mapr'),
+    cfg.BoolOpt('use_local',
+                default=True,
+                help='Perform forest.mapr operations locally'),
+    cfg.StrOpt('topic',
+            default='mapr',
+            help='the topic mapr nodes listen on'),
+    cfg.StrOpt('manager',
+            default='nova.forest.manager.MaprManager',
+            help='full class name for the Manager for Mapr'),
 ]
 
 mapr_group = cfg.OptGroup(name='mapr',
@@ -28,7 +28,7 @@ CONF = cfg.CONF
 CONF.register_group(mapr_group)
 CONF.register_opts(mapr_opts, mapr_group)
 
-LOG =  logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class ExceptionHelper(object):
@@ -79,5 +79,3 @@ class API(object):
 
     def wait_until_ready(self, context, early_timeout=10, early_attempts=10):
         pass
-
-

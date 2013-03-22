@@ -39,10 +39,10 @@ def model_query(context, model, *args, **kwargs):
             query.query.filter(base_model.deleted != default_deleted_value)
         else:
             raise Exception('Unrecognized read_deleted value %s'
-                             % read_deleted)
+                            % read_deleted)
 
-    if tenant_only: # FIXME check admin role
-        if tenant_only== 'allow_none':
+    if tenant_only:  # FIXME check admin role
+        if tenant_only == 'allow_none':
             query = query.filter(or_(base_model.tenant_id == context.tenant_id,
                                      base_model.tenant_id == None))
         else:
@@ -66,16 +66,16 @@ def job_workflow_get(context, job_workflow_id):
 
 
 def job_workflow_get_all(context, tenant_only=True):
-    results = model_query(context, models.JobWorkflow,
-                           read_deleted='no', tenant_only=tenant_only). \
-              filter_by(owner_id=None).all()
+    results = (model_query(context, models.JobWorkflow,
+                          read_deleted='no', tenant_only=tenant_only)
+               .filter_by(owner_id=None).all())
     return results
 
 
 def job_workflow_get_all_by_tenant(context):
-    results = model_query(context, models.JobWorkflow, read_deleted='no'). \
-              filter_by(owner_id=None). \
-              filter_by(tenant_id=context.tenant_id).all()
+    results = (model_query(context, models.JobWorkflow, read_deleted='no')
+               .filter_by(owner_id=None)
+               .filter_by(tenant_id=context.tenant_id).all())
     return results
 
 
@@ -103,7 +103,7 @@ def job_workflow_delete(context, job_workflow_id):
                        'that does not exist' % job_workflow_id)
     # get object session
     session = Session.object_session(job_workflow)
-    session.delete(job_workflow.user_creds) # FIXME Maybe we do not need it
+    session.delete(job_workflow.user_creds)  # FIXME Maybe we do not need it
     job_workflow.soft_delete()
     session.flush()
 
@@ -111,7 +111,7 @@ def job_workflow_delete(context, job_workflow_id):
 #
 # FIXME Maybe we need a ** Super User ** instread of saving user creds
 #
-from forest.common import crypt # FIXME
+from forest.common import crypt  # FIXME
 
 
 def user_creds_create(context):
