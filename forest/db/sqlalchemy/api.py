@@ -51,12 +51,12 @@ def model_query(context, model, *args, **kwargs):
     return query
 
 
-def job_workflow_get(context, job_workflow_id):
+def job_flow_get(context, job_flow_id):
     '''
     If is_admin flag is False,
     we only allow retrieval of a specific stack in the tenant scoping
     '''
-    result = model_query(context, models.JobWorkflow).get(job_workflow_id)
+    result = model_query(context, models.JobFlow).get(job_flow_id)
 
     if (result is not None and context is not None and
             result.tenant_id != context.tenant_id):
@@ -65,48 +65,89 @@ def job_workflow_get(context, job_workflow_id):
     return result
 
 
-def job_workflow_get_all(context, tenant_only=True):
-    results = (model_query(context, models.JobWorkflow,
+def job_flow_get_all(context, tenant_only=True):
+    results = (model_query(context, models.JobFlow,
                           read_deleted='no', tenant_only=tenant_only)
                .filter_by(owner_id=None).all())
     return results
 
 
-def job_workflow_get_all_by_tenant(context):
-    results = (model_query(context, models.JobWorkflow, read_deleted='no')
+def job_flow_get_all_by_tenant(context):
+    results = (model_query(context, models.JobFlow, read_deleted='no')
                .filter_by(owner_id=None)
                .filter_by(tenant_id=context.tenant_id).all())
     return results
 
 
-def job_workflow_create(context, values):
-    job_workflow_ref = models.JobWorkflow()
-    job_workflow_ref.update(values)
-    job_workflow_ref.save(_session(context))
-    return job_workflow_ref
+def job_flow_create(context, values):
+    job_flow_ref = models.JobFlow()
+    job_flow_ref.update(values)
+    job_flow_ref.save(_session(context))
+    return job_flow_ref
 
 
-def job_workflow_update(context, job_workflow_id, values):
-    job_workflow = job_workflow_get(context, job_workflow_id)
-    if not job_workflow:
-        raise NotFound('Attempt to update a job workflow with id: %s '
-                       'that does not exist' % job_workflow_id)
+def job_flow_update(context, job_flow_id, values):
+    job_flow_ref = job_flow_get(context, job_flow_id)
+    if not job_flow_ref:
+        raise NotFound('Attempt to update a job flow with id: %s '
+                       'that does not exist' % job_flow_id)
 
-    job_workflow.update(values)
-    job_workflow.save(_session(context))
+    job_flow_ref.update(values)
+    job_flow_ref.save(_session(context))
 
 
-def job_workflow_delete(context, job_workflow_id):
-    job_workflow = job_workflow_get(context, job_workflow_id)
-    if not job_workflow:
-        raise NotFound('Attempt to update a job workflow with id: %s '
-                       'that does not exist' % job_workflow_id)
+def job_flow_delete(context, job_flow_id):
+    job_flow_ref = job_flow_get(context, job_flow_id)
+    if not job_flow_ref:
+        raise NotFound('Attempt to update a job flow with id: %s '
+                       'that does not exist' % job_flow_id)
     # get object session
-    session = Session.object_session(job_workflow)
-    session.delete(job_workflow.user_creds)  # FIXME Maybe we do not need it
-    job_workflow.soft_delete()
+    session = Session.object_session(job_flow_ref)
+
+    job_flow_ref.soft_delete()
+    count = (session.query(models.InstanceGroup)
+             .filter_by(job_flow_id=job_flow_id)
+             .soft_delete())
+    if count == 0:
+        pass #FIX
+    session.delete(job_flow_ref.user_creds)  # FIXME Maybe we do not need it
     session.flush()
 
+
+def instance_group_create(context, values):
+    instance_group_ref = models.InstanceGroup()
+    instance_group_ref.update(values)
+    instance_group_ref.save(_session(context))
+    return instance_group_ref
+
+
+def instance_group_get(context, instance_group_id):
+    result = model_query(context, models.InstanceGroup).get(instance_group_id)
+    return result
+
+
+def instance_group_get_by_job_flow(context, job_flow_id):
+    result = (model_query(context, models.InstanceGroup)
+              .filter_by(job_flow_id=job_flow_id).all())
+    return result
+
+
+def instance_group_update(context, instance_group_id, values):
+    instance_group_ref = instance_group_get(context, instance_group_id)
+    if not instance_group_ref:
+        raise NotFound('Attempt to update a instance group with id: %s '
+                       'that does not exist' % instance_group_id)
+
+    instance_group_ref.update(values)
+    instance_group_ref.save(_session(context))
+
+
+def instance_group_delete(context, instance_group_id):
+    result = (model_query(context, models.InstanceGroup)
+              .filter_by(id=instance_group_id).soft_delete())
+    if not result:
+        raise NotFound('Attempt to update a instance group with id: %s '
+                       'that does not exist' % instance_group_id)
 
 #
 # FIXME Maybe we need a ** Super User ** instread of saving user creds

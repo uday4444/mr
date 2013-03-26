@@ -69,9 +69,13 @@ class ForestBase(models.ModelBase):
             session = self._get_session()
         session.refresh(self, attrs)
 
-default_deleted_value = base_model.__mapper__.c.deleted.default.arg
-if read_deleted == 'no':
-    query.query.filter(base_model.deleted == default_deleted_value)
+
+def convert_datetimes(values, *datetime_keys):
+    for key in values:
+        if key in datetime_keys and isinstance(values[key], basestring):
+            values[key] = timeutils.parse_strtime(values[key])
+    return values
+
 
 class JobFlow(BASE, ForestBase, models.SoftDeleteMixin):
     '''
@@ -89,7 +93,7 @@ class JobFlow(BASE, ForestBase, models.SoftDeleteMixin):
     - jobflow role / ami
     '''
 
-    __tablename__ = 'jobflows'
+    __tablename__ = 'job_flows'
 
     id = Column(String, primary_key=True, default=uuidutils.generate_uuid)
     name = Column(String(255), nullable=False)
@@ -106,11 +110,11 @@ class JobFlow(BASE, ForestBase, models.SoftDeleteMixin):
 
     instance_groups = relationship('InstanceGroup',
                                    primaryjoin='and_(JobFlow.id =='
-                                       'InstanceGroup.jobflow_id, '
+                                       'InstanceGroup.job_flow_id, '
                                        'InstanceGroup.deleted =='
                                        '%d' % DEFAULT_DELETED_VALUE)
 
-    # jobflow execution status detail
+    # job flow execution status detail
     created_at = Column(DateTime)
     ended_at = Column(DateTime)
     ready_at = Column(DateTime)
@@ -120,21 +124,19 @@ class JobFlow(BASE, ForestBase, models.SoftDeleteMixin):
                         'SHUTTING_DOWN', 'STARTING', 'WAITING',
                         'BOOTSTRAPPING'))
 
-    user_creds_id = Column(
-        Integer,
-        ForeignKey('user_creds.id'),
-        nullable=False)
+    user_creds_id = Column(Integer, ForeignKey('user_creds.id'),
+                           nullable=False)
 
 
 class InstanceGroup(BASE, ForestBase, models.SoftDeleteMixin):
 
-    __tablename__ = 'instance_group'
+    __tablename__ = 'instance_groups'
 
     id = Column(String, primary_key=True, default=uuidutils.generate_uuid)
-    name = Column(String(255))  #Friendly name given to the instance group
+    name = Column(String(255), nullable=False)  #Friendly name given to the instance group
 
-    request_count = Column(Integer)
-    running_count = Column(Integer)
+    request_count = Column(Integer, nullable=False)
+    running_count = Column(Integer, default=0)
     type = Column(String(255))
     role = Column(Enum('MASTER', 'CORE', 'TASK'))
 
@@ -146,7 +148,7 @@ class InstanceGroup(BASE, ForestBase, models.SoftDeleteMixin):
     state = Column(Enum('PROVISIONING', 'BOOTSTRAPPING', 'RUNNING',
                         'RESIZING', 'ARRESTED', 'SHUTTING_DOWN', 'ENDED'))
 
-    jobflow_id = Column(String, ForeignKey('jobflows.id'))
+    job_flow_id = Column(String, ForeignKey('job_flows.id'))
 
 
 # TODO: Whether it is the only appropriate way
@@ -168,4 +170,4 @@ class UserCreds(BASE, ForestBase):
     aws_auth_url = Column(String)
     tenant_id = Column(String)
     aws_creds = Column(String)
-    jobflow = relationship(JobFlow, backref=backref('user_creds'))
+    job_flow = relationship(JobFlow, backref=backref('user_creds'))

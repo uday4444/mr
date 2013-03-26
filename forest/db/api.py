@@ -34,15 +34,35 @@ def job_workflow_get_all_by_tenant(context):
 
 
 def job_workflow_create(context, values):
-    return job_workflow_create(context, values)
+    return IMPL.job_workflow_create(context, values)
 
 
 def job_workflow_update(context, job_workflow_id, values):
-    job_workflow_update(context, job_workflow_id, values)
+    IMPL.job_workflow_update(context, job_workflow_id, values)
 
 
 def job_workflow_delete(context, job_workflow_id):
-    job_workflow_delete(context, job_workflow_id)
+    IMPL.job_workflow_delete(context, job_workflow_id)
+
+
+def instance_group_create(context, values):
+    return IMPL.instance_group_create(context, values)
+
+
+def instance_group_get(context, instance_group_id):
+    return IMPL.instance_group_get(context, instance_group_id)
+
+
+def instance_group_get_by_job_flow(context, job_flow_id):
+    return IMPL.instance_group_get_by_job_flow(context, job_flow_id)
+
+
+def instance_group_update(context, instance_group_id, values):
+    IMPL.instance_group_update(context, instance_group_id, values)
+
+
+def instance_group_delete(context, instance_group_id):
+    IMPL.instance_group_delete(context, instance_group_id)
 
 
 # - - - - - - - - - - - - - - - - - - - #
