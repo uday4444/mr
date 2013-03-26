@@ -21,7 +21,7 @@ def model_query(context, model, *args, **kwargs):
 
     def is_subclass_of_softdeletemixin(obj):
         return (isinstance(obj, type)
-                and issubclass(obj, models.SoftDeleteMixin_))
+                and issubclass(obj, models.SoftDeleteMixin))
 
     query = session.query(model, *args)
     base_model = kwargs.get('base_model', model)

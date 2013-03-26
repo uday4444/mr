@@ -3,7 +3,8 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import Session
-from sqlalchemy import (Column, Integer, String, DateTime, Text, ForeignKey)
+from sqlalchemy import (Column, Integer, String, DateTime, ForeignKey,
+                        Enum, Boolean)
 
 from openstack.commom import uuidutils, timeutils
 from openstack.common.db.sqlalchemy import types, models
@@ -14,6 +15,8 @@ from oslo.config import cfg
 
 CONF = cfg.CONF
 BASE = declarative_base()
+
+DEFAULT_DELETED_VALUE = models.SoftDeleteMixin.deleted.default.arg
 
 
 class ForestBase(models.ModelBase):
@@ -66,51 +69,84 @@ class ForestBase(models.ModelBase):
             session = self._get_session()
         session.refresh(self, attrs)
 
+default_deleted_value = base_model.__mapper__.c.deleted.default.arg
+if read_deleted == 'no':
+    query.query.filter(base_model.deleted == default_deleted_value)
 
-class JobWorkflow(BASE, ForestBase, models.SoftDeleteMixin):
+class JobFlow(BASE, ForestBase, models.SoftDeleteMixin):
     '''
-    Represents a Hadoop workflow
+    Represents a Hadoop kflow
     - Master instance assigns Hadoop tasks to cor and task nodes and
       monitors their status.
     - Core instances run Hadoop tasks and store data using the Hadoop
       Distributed File System(HDFS).
     - Task instances run Hadoop tasks, but do not persist data,.
+
+    Not supported now:
+    - bootstrap action
+    - loguri
+    - last_state_change_reason
+    - jobflow role / ami
     '''
 
-    __tablename__ = 'job_workflows'
+    __tablename__ = 'jobflows'
 
     id = Column(String, primary_key=True, default=uuidutils.generate_uuid)
     name = Column(String(255), nullable=False)
-    description = Column(String(255))
 
     owner_id = Column(String(255), nullable=False)
     tenant_id = Column(String(255))
 
-    # Hadoop cluster info
-    access_ipaddress = Column(types.IPAddress())
+    # details
+    key_name = Column(String(255))
+    subnet_id = Column(String(255))
+    region_name = Column(String(255))
+    termination_protected = Column(Boolean, default=False)
+    access_ipaddress = Column(types.IPAddress())  #TODO DNSName is better
 
-    state = Column(Integer)  # FIXME default value
-    scheduled_at = Column(DateTime)
-    launched_at = Column(DateTime)
-    terminated_at = Column(DateTime)
-    # - - - - - -
-    master_node_id = Column(Integer)  # reservation id
-    master_node_flavor_id = Column(String(255))  # flavor id
-    # - - - - - -
-    core_node_id = Column(Integer)  # reservation id
-    core_node_count = Column(Integer)  # number of instances
-    core_nodes_flavor_id = Column(String(255))  # flavor id
-    # - - - - - -
-    task_node_id = Column(Integer)  # reservation id
-    task_node_count = Column(Integer)  # number of instances
-    task_node_flavor_id = Column(String(255))  # flavor id
+    instance_groups = relationship('InstanceGroup',
+                                   primaryjoin='and_(JobFlow.id =='
+                                       'InstanceGroup.jobflow_id, '
+                                       'InstanceGroup.deleted =='
+                                       '%d' % DEFAULT_DELETED_VALUE)
+
+    # jobflow execution status detail
+    created_at = Column(DateTime)
+    ended_at = Column(DateTime)
+    ready_at = Column(DateTime)
+    started_at = Column(DateTime)
+    last_state_change_reason = Column(String)
+    state = Column(Enum('COMPLETED', 'FAILED', 'TERMINATED', 'RUNNING',
+                        'SHUTTING_DOWN', 'STARTING', 'WAITING',
+                        'BOOTSTRAPPING'))
 
     user_creds_id = Column(
         Integer,
         ForeignKey('user_creds.id'),
         nullable=False)
 
-    nodes_info = Column(Text)  # TODO: storing json object ?
+
+class InstanceGroup(BASE, ForestBase, models.SoftDeleteMixin):
+
+    __tablename__ = 'instance_group'
+
+    id = Column(String, primary_key=True, default=uuidutils.generate_uuid)
+    name = Column(String(255))  #Friendly name given to the instance group
+
+    request_count = Column(Integer)
+    running_count = Column(Integer)
+    type = Column(String(255))
+    role = Column(Enum('MASTER', 'CORE', 'TASK'))
+
+    created_at = Column(DateTime)
+    terminated_at = Column(DateTime)
+    started_at = Column(DateTime)
+    ready_at = Column(DateTime)
+    last_state_change_reason = Column(String)
+    state = Column(Enum('PROVISIONING', 'BOOTSTRAPPING', 'RUNNING',
+                        'RESIZING', 'ARRESTED', 'SHUTTING_DOWN', 'ENDED'))
+
+    jobflow_id = Column(String, ForeignKey('jobflows.id'))
 
 
 # TODO: Whether it is the only appropriate way
@@ -132,4 +168,4 @@ class UserCreds(BASE, ForestBase):
     aws_auth_url = Column(String)
     tenant_id = Column(String)
     aws_creds = Column(String)
-    job_workflow = relationship(JobWorkflow, backref=backref('user_creds'))
+    jobflow = relationship(JobFlow, backref=backref('user_creds'))
