@@ -24,7 +24,7 @@ def _session(context):
 def model_query(context, model, *args, **kwargs):
     session = _session(context)
     read_deleted = kwargs.get('read_deleted',
-                              getattr(context, 'read_deleted', 'yes'))
+                              getattr(context, 'read_deleted', 'no'))
     tenant_only = kwargs.get('project_only', False)
 
     def is_subclass_of_softdeletemixin(obj):
@@ -64,7 +64,8 @@ def job_flow_get(context, job_flow_id):
     If is_admin flag is False,
     we only allow retrieval of a specific stack in the tenant scoping
     '''
-    result = model_query(context, models.JobFlow).get(job_flow_id)
+    result = (model_query(context, models.JobFlow)
+              .filter_by(id=job_flow_id).first())  # TODO joinedload instance group
 
     if (result is not None and context is not None and
             result.tenant_id != context.tenant_id):
@@ -130,7 +131,8 @@ def instance_group_create(context, values):
 
 
 def instance_group_get(context, instance_group_id):
-    result = model_query(context, models.InstanceGroup).get(instance_group_id)
+    result = (model_query(context, models.InstanceGroup)
+              .filter_by(id=instance_group_id).first())
     return result
 
 
