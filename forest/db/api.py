@@ -7,10 +7,9 @@ from openstack.common import log as logging
 
 # from forest import utils
 
-
 CONF = cfg.CONF
 
-_BACKEND_MAPPING = {'sqlalchemy': 'forest.db.sqlclchemy.api'}
+_BACKEND_MAPPING = {'sqlalchemy': 'forest.db.sqlalchemy.api'}
 
 IMPL = db_api.DBAPI(backend_mapping=_BACKEND_MAPPING)
 LOG = logging.getLogger(__name__)
@@ -21,28 +20,28 @@ def get_session(context=None):
     return IMPL.get_session(context)
 
 
-def job_workflow_get(context, job_workflow_id):
-    return IMPL.job_workflow_get(context, job_workflow_id)
+def job_flow_get(context, job_flow_id):
+    return IMPL.job_flow_get(context, job_flow_id)
 
 
-def job_workflow_get_all(context, tenant_only=True):
-    return IMPL.job_workflow_get_all(context, tenant_only)
+def job_flow_get_all(context, tenant_only=True):
+    return IMPL.job_flow_get_all(context, tenant_only)
 
 
-def job_workflow_get_all_by_tenant(context):
-    return IMPL.job_workflow_get_all_by_tenant(context)
+def job_flow_get_all_by_tenant(context):
+    return IMPL.job_flow_get_all_by_tenant(context)
 
 
-def job_workflow_create(context, values):
-    return IMPL.job_workflow_create(context, values)
+def job_flow_create(context, values):
+    return IMPL.job_flow_create(context, values)
 
 
-def job_workflow_update(context, job_workflow_id, values):
-    IMPL.job_workflow_update(context, job_workflow_id, values)
+def job_flow_update(context, job_flow_id, values):
+    IMPL.job_flow_update(context, job_flow_id, values)
 
 
-def job_workflow_delete(context, job_workflow_id):
-    IMPL.job_workflow_delete(context, job_workflow_id)
+def job_flow_delete(context, job_flow_id):
+    IMPL.job_flow_delete(context, job_flow_id)
 
 
 def instance_group_create(context, values):

@@ -6,11 +6,12 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy import (Column, Integer, String, DateTime, ForeignKey,
                         Enum, Boolean)
 
-from openstack.commom import uuidutils, timeutils
-from openstack.common.db.sqlalchemy import types, models
+from oslo.config import cfg
+from openstack.common import uuidutils, timeutils
+from openstack.common.db.sqlalchemy import models
 from openstack.common.db.sqlalchemy.session import get_session
 
-from oslo.config import cfg
+from forest.db.sqlalchemy import types
 
 
 CONF = cfg.CONF
@@ -106,13 +107,13 @@ class JobFlow(BASE, ForestBase, models.SoftDeleteMixin):
     subnet_id = Column(String(255))
     region_name = Column(String(255))
     termination_protected = Column(Boolean, default=False)
-    access_ipaddress = Column(types.IPAddress())  #TODO DNSName is better
+    access_ipaddress = Column(types.IPAddress())  # TODO DNSName is better
 
     instance_groups = relationship('InstanceGroup',
                                    primaryjoin='and_(JobFlow.id =='
-                                       'InstanceGroup.job_flow_id, '
-                                       'InstanceGroup.deleted =='
-                                       '%d' % DEFAULT_DELETED_VALUE)
+                                               'InstanceGroup.job_flow_id, '
+                                               'InstanceGroup.deleted =='
+                                               '%d)' % DEFAULT_DELETED_VALUE)
 
     # job flow execution status detail
     created_at = Column(DateTime)
@@ -133,7 +134,8 @@ class InstanceGroup(BASE, ForestBase, models.SoftDeleteMixin):
     __tablename__ = 'instance_groups'
 
     id = Column(String, primary_key=True, default=uuidutils.generate_uuid)
-    name = Column(String(255), nullable=False)  #Friendly name given to the instance group
+    # Friendly name given to the instance group
+    name = Column(String(255), nullable=False)
 
     request_count = Column(Integer, nullable=False)
     running_count = Column(Integer, default=0)
@@ -158,7 +160,7 @@ class UserCreds(BASE, ForestBase):
     handed in by wsgi.
     '''
 
-    _tablename__ = 'user_creds'
+    __tablename__ = 'user_creds'
 
     id = Column(Integer, primary_key=True)
     username = Column(String)

@@ -14,6 +14,8 @@ tests_require = [
 
 install_requires = [
     'python-novaclient',
+    'netaddr',
+    'pycrypto',
 ]
 
 dependency_links = [
@@ -59,6 +61,10 @@ long description""",
           #'docs': docs_require,
       },
       entry_points="""
+      [console_scripts]
+          init_forest_db = forest.scripts.database:init_db
+          drop_forest_db = forest.scripts.database:drop_db
+
       # -*- Entry points: -*-
       """,
       )

@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import or_
-from sqlalchemy.orm.session import Session
+import sys
 
+from sqlalchemy.orm.session import Session
+from sqlalchemy import or_
+
+from openstack.common.db.sqlalchemy.models import SoftDeleteMixin
 from openstack.common.db.sqlalchemy.session import get_session
 from openstack.common.exception import NotFound
 
-from forest.db.sqlclchemy import models
+from forest.db.sqlalchemy import models
 
+
+def get_backend():
+    ''' The backend is this module itself. '''
+    return sys.modules[__name__]
 
 def _session(context):
     ''' Get session from context '''
@@ -16,12 +23,13 @@ def _session(context):
 
 def model_query(context, model, *args, **kwargs):
     session = _session(context)
-    read_deleted = kwargs.get('read_deleted', context.read_deleted)
+    read_deleted = kwargs.get('read_deleted',
+                              getattr(context, 'read_deleted', 'yes'))
     tenant_only = kwargs.get('project_only', False)
 
     def is_subclass_of_softdeletemixin(obj):
         return (isinstance(obj, type)
-                and issubclass(obj, models.SoftDeleteMixin))
+                and issubclass(obj, SoftDeleteMixin))
 
     query = session.query(model, *args)
     base_model = kwargs.get('base_model', model)
@@ -31,12 +39,12 @@ def model_query(context, model, *args, **kwargs):
 
         default_deleted_value = base_model.__mapper__.c.deleted.default.arg
         if read_deleted == 'no':
-            query.query.filter(base_model.deleted == default_deleted_value)
+            query = query.filter(base_model.deleted == default_deleted_value)
             pass
         elif read_deleted == 'yes':
             pass
         elif read_deleted == 'only':
-            query.query.filter(base_model.deleted != default_deleted_value)
+            query = query.filter(base_model.deleted != default_deleted_value)
         else:
             raise Exception('Unrecognized read_deleted value %s'
                             % read_deleted)
@@ -109,7 +117,7 @@ def job_flow_delete(context, job_flow_id):
              .filter_by(job_flow_id=job_flow_id)
              .soft_delete())
     if count == 0:
-        pass #FIX
+        pass  # FIX
     session.delete(job_flow_ref.user_creds)  # FIXME Maybe we do not need it
     session.flush()
 

@@ -19,7 +19,7 @@ class MaprManager(object):
         For long running job flows, we recommend that you periodically store
         your results. Also to prevent loss of data, configure the last step of
         the job flow to store results in OpenStack swift.
-        
+
         parameter keep_jobflow_alive
         parameter termination_protected
 
@@ -29,7 +29,7 @@ class MaprManager(object):
         instances
         '''
         pass
-    
+
     def add_instance_groups():
         '''
         Adds an instance group to a running cluster.
