@@ -9,6 +9,7 @@ from openstack.common.rpc import common as rpc_common
 from forest.mapr import manager
 from forest.mapr import rpcapi
 
+
 mapr_opts = [
     cfg.BoolOpt('use_local',
                 default=True,

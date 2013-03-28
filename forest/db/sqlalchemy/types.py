@@ -3,7 +3,7 @@
 from sqlalchemy.dialects import postgresql
 from sqlalchemy import types
 
-from forest import utils
+from forest.common import utils
 
 
 class IPAddress(types.TypeDecorator):
