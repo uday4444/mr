@@ -28,8 +28,8 @@ def parse_args(argv, default_config_files=None):
 # TODO Simple test, REMOVE!
 if __name__ == '__main__':
     import sys
-    #import pprint
+    import pprint
     parse_args(sys.argv)
-    #pprint.pprint(cfg.CONF.__dict__)
-    print ''
+    pprint.pprint(cfg.CONF.__dict__)
+    print cfg.CONF.debug
     print cfg.CONF.sql_connection
