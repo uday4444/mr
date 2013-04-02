@@ -7,9 +7,6 @@ import webob.dec
 class Controller(object):
     ''' A controller that produces information on the heat API versions. '''
 
-    def __init__(self, conf):
-        self.conf = conf
-
     @webob.dec.wsgify
     def __call__(self, req):
         ''' Respond to a request for all OpenStack API versions. '''

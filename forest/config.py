@@ -74,12 +74,12 @@ def parse_config(argv, prog=None, default_config_files=None):
          default_config_files=default_config_files)
 
 
-def parse_api_config(argv, prog=None, default_config_files=None):
+def parse_api_config(argv, prog='forest-api', default_config_files=None):
     CONF.register_opts(api_opts)
     parse_config(argv, prog, default_config_files)
 
 
-def parse_service_config(argv, prog=None, default_config_files=None):
+def parse_service_config(argv, prog='forest-mapr', default_config_files=None):
     CONF.register_opts(service_opts)
     parse_config(argv, prog, default_config_files)
 
@@ -111,7 +111,8 @@ def _get_deployment_config_file():
             # to the last config file
             path = os.path.splitext(CONF.config_file[-1])[0] + "-paste.ini"
         else:
-            return None
+            msg = 'Unable to locate paste config file for prog:%s.' % CONF.prog
+            raise RuntimeError(msg)
     else:
         path = config_file
     return os.path.abspath(path)
@@ -148,7 +149,8 @@ def load_paste_app(app_name=None):
             CONF.log_opt_values(LOG, logging.DEBUG)
         return app
 
-    except (LookupError, ImportError) as e:
+    except (LookupError, ImportError, ValueError) as e:
+        raise e  # FIXME
         msg = ('Unable to load %(app_name)s from '
                'configuration file %(conf_file)s.'
                '\nGot: %(e)r') % locals()

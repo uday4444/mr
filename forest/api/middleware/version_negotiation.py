@@ -6,8 +6,8 @@ return
 
 from oslo.config import cfg
 
-import openstack.common.wsgi
 import openstack.common.log as logging
+import forest.common.wsgi
 
 from forest.api import versions
 
@@ -15,7 +15,7 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
-class VersionNegotiationFilter(openstack.common.wsgi.Middleware):
+class VersionNegotiationFilter(forest.common.wsgi.Middleware):
 
     def __init__(self, app):
         self.versions_app = versions.Controller()

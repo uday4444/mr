@@ -3,9 +3,9 @@ import json
 from oslo.config import cfg
 import webob.exc
 
-import openstack.common.wsgi
 import openstack.common.log as logging
 import openstack.common.context
+import forest.common.wsgi
 
 context_opts = [
     cfg.BoolOpt('owner_is_tenant', default=True),
@@ -19,7 +19,7 @@ CONF.register_opts(context_opts)
 LOG = logging.getLogger(__name__)
 
 
-class BaseContextMiddleware(openstack.common.wsgi.Middleware):
+class BaseContextMiddleware(forest.common.wsgi.Middleware):
 
     def process_response(self, resp):
         try:
@@ -33,6 +33,7 @@ class BaseContextMiddleware(openstack.common.wsgi.Middleware):
 
 def _get_anonymous_context():
     return openstack.common.context.get_admin_context()
+
 
 class ContextMiddleware(BaseContextMiddleware):
 
