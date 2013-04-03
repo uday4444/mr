@@ -24,7 +24,6 @@ __all__ = ('paste_deploy_app',
 
 DEFAULT_SQL_CONNECTION = 'sqlite:///' + paths.state_path_def('$sqlite_db')
 LOG = logging.getLogger(__name__)
-FOREST = 'forest'
 CONF = cfg.CONF
 
 
@@ -63,25 +62,26 @@ service_opts = [
 ]
 
 
-def parse_config(argv, prog=None, default_config_files=None):
+def parse_config(argv, project, prog=None, default_config_files=None):
     db_session.set_defaults(sql_connection=DEFAULT_SQL_CONNECTION,
-                            sqlite_db='%s.sqlite' % FOREST)
-    rpc.set_defaults(control_exchange=FOREST)
-    logging.setup(FOREST)
+                            sqlite_db='%s.sqlite' % project)
+    rpc.set_defaults(control_exchange=project)
     CONF(argv[1:],
-         project=FOREST,
+         project=project,
          prog=prog,
          default_config_files=default_config_files)
 
 
-def parse_api_config(argv, prog='forest-api', default_config_files=None):
+def parse_api_config(*args, **kwargs):
+    kwargs.setdefault('prog', 'forest-api')
     CONF.register_opts(api_opts)
-    parse_config(argv, prog, default_config_files)
+    parse_config(*args, **kwargs)
 
 
-def parse_service_config(argv, prog='forest-mapr', default_config_files=None):
+def parse_service_config(*args, **kwargs):
+    kwargs.setdefault('prog', 'forest-mapr')
     CONF.register_opts(service_opts)
-    parse_config(argv, prog, default_config_files)
+    parse_config(*args, **kwargs)
 
 
 def _register_paste_deploy_opts():
@@ -144,9 +144,6 @@ def load_paste_app(app_name=None):
 
         app = paste_deploy_app(conf_file, app_name, CONF)
 
-        # Log the options used when starting if we're in debug mode...
-        if CONF.debug:
-            CONF.log_opt_values(LOG, logging.DEBUG)
         return app
 
     except (LookupError, ImportError, ValueError) as e:

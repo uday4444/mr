@@ -32,26 +32,22 @@ LOG = logging.getLogger('forest.api')
 if __name__ == '__main__':
 
     try:
-        config.parse_api_config(sys.argv)
-        CONF.default_log_levels = ['amqplib=WARN',
-                                   'sqlalchemy=WARN',
-                                   'qpid.messaging=INFO',
-                                   'keystone=INFO',
-                                   'eventlet.wsgi.server=WARN',
-                                   'forest=DEBUG',
-                                  ]
-        launcher = service.ProcessLauncher()
+        project = 'forest'
+        config.parse_api_config(sys.argv, project=project)
+        logging.setup(project)
 
+        launcher = service.ProcessLauncher()
+        # Obtain the parameters
         app = config.load_paste_app()
         port = CONF.forest_api_listen_port
         host = CONF.forest_api_listen
         backlog = CONF.forest_api_listen_backlog
         threads = CONF.forest_api_listen_threads
         workers = CONF.forest_api_workers
-
+        # Launch services
         server = wsgi.Service(app, port, host, backlog, threads)
+        launcher.launch_service(server,workers=workers or 1)
         LOG.info('Starting Forest API on %s:%s' % (host, port))
-        launcher.launch_service(server, workers=workers or 1)
         launcher.wait()
 
     except RuntimeError, e:
