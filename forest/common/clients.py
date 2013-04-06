@@ -6,7 +6,6 @@ from openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 
-
 from novaclient.v1_1 import client as nova_client
 from keystoneclient.v2_0 import client as keystone_client
 
