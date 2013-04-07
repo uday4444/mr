@@ -5,7 +5,7 @@ import webob.exc
 
 import openstack.common.log as logging
 import openstack.common.context
-import forest.common.wsgi
+import openstack.common.wsgi
 
 context_opts = [
     cfg.BoolOpt('owner_is_tenant', default=True),
@@ -19,7 +19,7 @@ CONF.register_opts(context_opts)
 LOG = logging.getLogger(__name__)
 
 
-class BaseContextMiddleware(forest.common.wsgi.Middleware):
+class BaseContextMiddleware(openstack.common.wsgi.Middleware):
 
     def process_response(self, resp):
         try:

@@ -7,7 +7,7 @@ return
 from oslo.config import cfg
 
 import openstack.common.log as logging
-import forest.common.wsgi
+import openstack.common.wsgi
 
 from forest.api import versions
 
@@ -15,7 +15,7 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
-class VersionNegotiationFilter(forest.common.wsgi.Middleware):
+class VersionNegotiationFilter(openstack.common.wsgi.Middleware):
 
     def __init__(self, app):
         self.versions_app = versions.Controller()
@@ -30,7 +30,6 @@ class VersionNegotiationFilter(forest.common.wsgi.Middleware):
 
         if req.path_info_peek() == "versions":
             return self.versions_app
-
 
         try:
             # Remove version in url so it doesn't conflict later

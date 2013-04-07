@@ -5,7 +5,9 @@ Routines for configuring Forest
 '''
 
 import os
+import sys
 
+import routes
 from oslo.config import cfg
 
 from openstack.common.pastedeploy import paste_deploy_app
@@ -62,7 +64,7 @@ service_opts = [
 ]
 
 
-def parse_config(argv, project, prog=None, default_config_files=None):
+def parse_config(argv, project='forest', prog=None, default_config_files=None):
     db_session.set_defaults(sql_connection=DEFAULT_SQL_CONNECTION,
                             sqlite_db='%s.sqlite' % project)
     rpc.set_defaults(control_exchange=project)
@@ -118,6 +120,26 @@ def _get_deployment_config_file():
     return os.path.abspath(path)
 
 
+def _import_class(key, local_conf):
+    mod_str, _sep, class_str = local_conf[key].strip().rpartition(':')
+    del local_conf[key]
+    __import__(mod_str)
+    return getattr(sys.modules[mod_str], class_str)
+
+
+def app_factory(global_conf, **local_conf):
+    APP_FACTORY_KEY = 'forest.app_factory'
+    factory = _import_class(APP_FACTORY_KEY, local_conf)
+    mapper = routes.Mapper()
+    return factory(mapper)
+
+
+def filter_factory(global_conf, **local_conf):
+    FILTER_FACTORY_KEY = 'forest.filter_factory'
+    factory = _import_class(FILTER_FACTORY_KEY, local_conf)
+    return (lambda app: factory(app))
+
+
 def load_paste_app(app_name=None):
     '''
     Builds and returns a WSGI app from a paste config file.
@@ -156,8 +178,7 @@ def load_paste_app(app_name=None):
 
 
 if __name__ == '__main__':
-    import sys
-    parse_api_config(sys.argv, None)
+    parse_api_config(sys.argv)
     print CONF.forest_api_listen_port
     print CONF.prog
     print CONF.sql_connection
