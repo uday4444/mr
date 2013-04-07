@@ -21,6 +21,9 @@ LOG = logging.getLogger(__name__)
 
 class BaseContextMiddleware(openstack.common.wsgi.Middleware):
 
+    def __init__(self, app, global_conf, **local_conf):
+        super(BaseContextMiddleware, self).__init__(app)
+
     def process_response(self, resp):
         try:
             request_id = resp.request.context.request_id
@@ -57,6 +60,8 @@ class ContextMiddleware(BaseContextMiddleware):
         else:
             raise webob.exc.HTTPUnauthorized()
 
+        return None
+
 
     def _get_authenticated_context(self, req):
         #NOTE(bcwaldon): X-Roles is a csv string, but we need to parse
@@ -92,3 +97,4 @@ class UnauthenticatedContextMiddleware(BaseContextMiddleware):
 
     def process_request(self, req):
         req.context = _get_anonymous_context()
+        return None

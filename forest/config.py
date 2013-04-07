@@ -7,10 +7,9 @@ Routines for configuring Forest
 import os
 import sys
 
-import routes
 from oslo.config import cfg
 
-from openstack.common.pastedeploy import paste_deploy_app
+from openstack.common.pastedeploy import paste_deploy_app, AppFactory, FilterFactory
 from openstack.common.db.sqlalchemy import session as db_session
 from openstack.common import log as logging
 from openstack.common import rpc
@@ -32,7 +31,9 @@ CONF = cfg.CONF
 paste_deploy_group = cfg.OptGroup('paste_deploy')
 paste_deploy_opts = [
     cfg.StrOpt('flavor'),
-    cfg.StrOpt('config_file')
+    cfg.StrOpt('config_file'),
+    cfg.StrOpt('app_factory', default='forest.app_factory'),
+    cfg.StrOpt('filter_factory', default='forest.filter_factory')
 ]
 
 
@@ -127,15 +128,9 @@ def _import_class(key, local_conf):
     return getattr(sys.modules[mod_str], class_str)
 
 
-def app_factory(global_conf, **local_conf):
-    APP_FACTORY_KEY = 'forest.app_factory'
-    factory = _import_class(APP_FACTORY_KEY, local_conf)
-    mapper = routes.Mapper()
-    return factory(mapper)
-
-
 def filter_factory(global_conf, **local_conf):
-    FILTER_FACTORY_KEY = 'forest.filter_factory'
+    ''' Add simple factory with one parameter '''
+    FILTER_FACTORY_KEY = CONF.paste_deploy.filter_factory
     factory = _import_class(FILTER_FACTORY_KEY, local_conf)
     return (lambda app: factory(app))
 
@@ -163,6 +158,9 @@ def load_paste_app(app_name=None):
     try:
         LOG.debug('Loading %(app_name)s from %(conf_file)s',
                   {'conf_file': conf_file, 'app_name': app_name})
+
+        AppFactory.KEY = CONF.paste_deploy.app_factory
+        FilterFactory.KEY = CONF.paste_deploy.filter_factory
 
         app = paste_deploy_app(conf_file, app_name, CONF)
 

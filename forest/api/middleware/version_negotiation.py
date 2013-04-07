@@ -17,7 +17,7 @@ LOG = logging.getLogger(__name__)
 
 class VersionNegotiationFilter(openstack.common.wsgi.Middleware):
 
-    def __init__(self, app):
+    def __init__(self, app, global_conf, **local_conf):
         self.versions_app = versions.Controller()
         super(VersionNegotiationFilter, self).__init__(app)
 
