@@ -14,6 +14,8 @@ tests_require = [
 
 install_requires = [
     'python-novaclient',
+    'python-keystoneclient',
+    'python-swiftclient',
     'netaddr',
     'pycrypto',
 ]

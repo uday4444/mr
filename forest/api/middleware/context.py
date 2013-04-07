@@ -91,4 +91,4 @@ class ContextMiddleware(BaseContextMiddleware):
 class UnauthenticatedContextMiddleware(BaseContextMiddleware):
 
     def process_request(self, req):
-        req.context =  _get_anonymous_context()
+        req.context = _get_anonymous_context()
