@@ -15,5 +15,4 @@ def create_resource():
     '''
     Stacks resource factory method
     '''
-    deserializer = wsgi.JSONDeserializer()
-    return wsgi.Resource(Controller(), deserializer)
+    return wsgi.Resource(Controller())

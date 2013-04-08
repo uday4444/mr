@@ -34,16 +34,23 @@ class VersionNegotiationFilter(openstack.common.wsgi.Middleware):
         try:
             # Remove version in url so it doesn't conflict later
             req_version = req.path_info_pop()
+
+            # does not fix it
+            # req.path_info = ''.join(('/v', str(version), req.path_info))
+            if req.path_info == '':
+                return self.versions_app
+
+            req.path_info = req.path_info
             version = self._match_version_string(req_version)
+            req.environ['api.version'] = version
+
+            LOG.debug("Matched version: v%d", version)
+            LOG.debug('new uri %s' % req.path_info)
+            return None
         except ValueError:
             LOG.debug("Unknown version. Returning version choices.")
             return self.versions_app
 
-        req.environ['api.version'] = version
-        req.path_info = ''.join(('/v', str(version), req.path_info))
-        LOG.debug("Matched version: v%d", version)
-        LOG.debug('new uri %s' % req.path_info)
-        return None
 
     def _match_version_string(self, subject):
         '''
