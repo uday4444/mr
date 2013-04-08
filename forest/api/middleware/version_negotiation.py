@@ -35,12 +35,10 @@ class VersionNegotiationFilter(openstack.common.wsgi.Middleware):
             # Remove version in url so it doesn't conflict later
             req_version = req.path_info_pop()
 
-            # does not fix it
             # req.path_info = ''.join(('/v', str(version), req.path_info))
-            if req.path_info == '':
+            if not req.path_info:
                 return self.versions_app
 
-            req.path_info = req.path_info
             version = self._match_version_string(req_version)
             req.environ['api.version'] = version
 
