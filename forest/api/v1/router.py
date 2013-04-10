@@ -3,7 +3,7 @@
 import routes
 
 from openstack.common import wsgi
-from forest.api.v1 import workflows
+from forest.api.v1 import jobflows
 
 
 class API(wsgi.Router):
@@ -12,8 +12,9 @@ class API(wsgi.Router):
     def __init__(self, conf, **local_conf):
         self.conf = conf
         mapper = routes.Mapper()
+
         # Resource
-        workflows_resource = workflows.create_resource() # FIXME
-        mapper.connect('/', controller=workflows_resource, action='index')
+        jobflows_resource = jobflows.create_resource() # FIXME
+        mapper.resource('jobflow', 'jobflows', controller=jobflows_resource)
 
         super(API, self).__init__(mapper)

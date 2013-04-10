@@ -5,7 +5,7 @@ import json
 import webob.dec
 
 class Controller(object):
-    ''' A controller that produces information on the heat API versions. '''
+    ''' A controller that produces information on the forest API versions. '''
 
     @webob.dec.wsgify
     def __call__(self, req):
