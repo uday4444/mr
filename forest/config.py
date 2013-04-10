@@ -82,7 +82,7 @@ def parse_api_config(*args, **kwargs):
 
 
 def parse_service_config(*args, **kwargs):
-    kwargs.setdefault('prog', 'forest-mapr')
+    kwargs.setdefault('prog', 'forest-mr')
     CONF.register_opts(service_opts)
     parse_config(*args, **kwargs)
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-class MaprManager(object):
-    ''' MaprManager is the core of Local or RPC API'''
+class MrManager(object):
+    ''' MrManager is the core of Local or RPC API'''
 
     def run_jobflow(
             key_name=None,
