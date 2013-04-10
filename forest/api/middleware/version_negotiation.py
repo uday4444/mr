@@ -49,7 +49,6 @@ class VersionNegotiationFilter(openstack.common.wsgi.Middleware):
             LOG.debug("Unknown version. Returning version choices.")
             return self.versions_app
 
-
     def _match_version_string(self, subject):
         '''
         Given a string, tries to match a major and/or

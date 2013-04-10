@@ -9,12 +9,9 @@ class Controller(object):
         self.conf = conf
 
     def index(self, req, **action_args):
-        return {'jobflows': [{'I':'x',}, {'I':'e',}, {'I':'o',}]}
+        return {'jobflows': [{'I': 'x'}, {'I': 'e'}, {'I': 'o'}]}
 
     def create(self, req, **action_args):
-        raise NotImplementedError()
-
-    def new(self, req, **action_args):
         raise NotImplementedError()
 
     def update(self, req, **action_args):
@@ -28,6 +25,10 @@ class Controller(object):
 
     def edit(self, req, **action_args):
         self.update(req, **action_args)
+
+    def new(self, req, **action_args):
+        ''' Not prepared to implement the method '''
+        raise NotImplementedError()
 
 
 def create_resource(conf):

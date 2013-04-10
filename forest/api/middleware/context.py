@@ -62,7 +62,6 @@ class ContextMiddleware(BaseContextMiddleware):
 
         return None
 
-
     def _get_authenticated_context(self, req):
         #NOTE(bcwaldon): X-Roles is a csv string, but we need to parse
         # it into a list to be useful
@@ -72,7 +71,7 @@ class ContextMiddleware(BaseContextMiddleware):
         #NOTE(bcwaldon): This header is deprecated in favor of X-Auth-Token
         deprecated_token = req.headers.get('X-Storage-Token')
 
-        # FIXME REMOVE 
+        # FIXME REMOVE
         service_catalog = None
         if req.headers.get('X-Service-Catalog') is not None:
             try:
@@ -81,7 +80,7 @@ class ContextMiddleware(BaseContextMiddleware):
                 print 'service_catalog, PLEASE REMOVE:', service_catalog
             except ValueError:
                 raise webob.exc.HTTPInternalServerError(
-                        'Invalid service catalog json.')
+                    'Invalid service catalog json.')
 
         kwargs = {
             'auth_token': req.headers.get('X-Auth-Token', deprecated_token),

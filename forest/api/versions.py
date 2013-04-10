@@ -4,6 +4,7 @@ import httplib
 import json
 import webob.dec
 
+
 class Controller(object):
     ''' A controller that produces information on the forest API versions. '''
 

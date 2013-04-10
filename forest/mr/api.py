@@ -15,15 +15,15 @@ mr_opts = [
                 default=True,
                 help='Perform forest.mr operations locally'),
     cfg.StrOpt('topic',
-            default='mr',
-            help='the topic mr nodes listen on'),
+               default='mr',
+               help='the topic mr nodes listen on'),
     cfg.StrOpt('manager',
-            default='nova.forest.manager.MrManager',
-            help='full class name for the Manager for Mr'),
+               default='nova.forest.manager.MrManager',
+               help='full class name for the Manager for Mr'),
 ]
 
 mr_group = cfg.OptGroup(name='mr',
-                          title='Mr Options')
+                        title='Mr Options')
 
 CONF = cfg.CONF
 CONF.register_group(mr_group)
@@ -33,10 +33,10 @@ LOG = logging.getLogger(__name__)
 
 
 class ExceptionHelper(object):
-    """
+    '''
     Using it in Local API. Class to wrap another and translate the
     ClientExceptions raised by its function calls to the actual ones.
-    """
+    '''
 
     def __init__(self, target):
         self._target = target
@@ -54,10 +54,10 @@ class ExceptionHelper(object):
 
 
 class LocalAPI(object):
-    """
+    '''
     A local version of the mr API that does database updates
     locally instead of via RPC.
-    """
+    '''
 
     def __init__(self):
         self.manager = ExceptionHelper(manager.MrManager())
@@ -71,9 +71,9 @@ class LocalAPI(object):
 
 
 class API(object):
-    """
+    '''
     Mr API that does updates via RPC to the MrManager.
-    """
+    '''
 
     def __init__(self):
         self.mr_rpc = rpcapi.MrAPI()

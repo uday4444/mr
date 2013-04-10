@@ -16,6 +16,7 @@ def get_backend():
     ''' The backend is this module itself. '''
     return sys.modules[__name__]
 
+
 def _session(context):
     ''' Get session from context '''
     return (context and context.session) or get_session()
