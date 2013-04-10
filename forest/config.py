@@ -167,7 +167,6 @@ def load_paste_app(app_name=None):
         return app
 
     except (LookupError, ImportError, ValueError) as e:
-        raise e  # FIXME
         msg = ('Unable to load %(app_name)s from '
                'configuration file %(conf_file)s.'
                '\nGot: %(e)r') % locals()
@@ -176,6 +175,7 @@ def load_paste_app(app_name=None):
 
 
 if __name__ == '__main__':
+    # FIXME
     parse_api_config(sys.argv)
     print CONF.forest_api_listen_port
     print CONF.prog

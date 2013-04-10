@@ -10,11 +10,11 @@ class API(wsgi.Router):
     ''' WSGI router for Forest v1 API requests. '''
 
     def __init__(self, conf, **local_conf):
-        self.conf = conf
+
         mapper = routes.Mapper()
 
         # Resource
-        jobflows_resource = jobflows.create_resource() # FIXME
+        jobflows_resource = jobflows.create_resource(conf)
         mapper.resource('jobflow', 'jobflows', controller=jobflows_resource)
 
         super(API, self).__init__(mapper)
