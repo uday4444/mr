@@ -1,22 +1,23 @@
-import json
+# -*- coding: utf-8 -*-
 
 from oslo.config import cfg
 import webob.exc
 
+import openstack.common.jsonutils as json
 import openstack.common.log as logging
-import openstack.common.context
 import openstack.common.wsgi
+
+import forest.common.context as context
+
+LOG = logging.getLogger(__name__)
+CONF = cfg.CONF
 
 context_opts = [
     cfg.BoolOpt('owner_is_tenant', default=True),
     cfg.StrOpt('admin_role', default='admin'),
     cfg.BoolOpt('allow_anonymous_access', default=False),
 ]
-
-CONF = cfg.CONF
 CONF.register_opts(context_opts)
-
-LOG = logging.getLogger(__name__)
 
 
 class BaseContextMiddleware(openstack.common.wsgi.Middleware):
@@ -24,18 +25,17 @@ class BaseContextMiddleware(openstack.common.wsgi.Middleware):
     def __init__(self, app, global_conf, **local_conf):
         super(BaseContextMiddleware, self).__init__(app)
 
+    def _get_anonymous_context(self):
+        return context.get_admin_context()
+
     def process_response(self, resp):
         try:
             request_id = resp.request.context.request_id
         except AttributeError:
             LOG.warn('Unable to retrieve request id from context')
         else:
-            resp.headers['x-openstack-request-id'] = 'req-%s' % request_id
+            resp.headers['x-openstack-request-id'] = request_id
         return resp
-
-
-def _get_anonymous_context():
-    return openstack.common.context.get_admin_context()
 
 
 class ContextMiddleware(BaseContextMiddleware):
@@ -43,10 +43,6 @@ class ContextMiddleware(BaseContextMiddleware):
     def process_request(self, req):
         '''
         Convert authentication information into a request context
-
-        Generate a forest.context.RequestContext object from the available
-        authentication headers and store on the 'context' attribute
-        of the req object.
 
         :param req: wsgi request object that will be given the context object
         :raises webob.exc.HTTPUnauthorized: when value of the X-Identity-Status
@@ -59,41 +55,38 @@ class ContextMiddleware(BaseContextMiddleware):
             req.context = self._get_anonymous_context()
         else:
             raise webob.exc.HTTPUnauthorized()
-
         return None
 
+
     def _get_authenticated_context(self, req):
-        #NOTE(bcwaldon): X-Roles is a csv string, but we need to parse
-        # it into a list to be useful
-        roles_header = req.headers.get('X-Roles', '')
+
+        headers = req.headers
+
+        deprecated_token = headers.get('X-Storage-Token')
+        roles_header = headers.get('X-Roles', '') # X-Roles is a csv string
         roles = [r.strip().lower() for r in roles_header.split(',')]
 
-        #NOTE(bcwaldon): This header is deprecated in favor of X-Auth-Token
-        deprecated_token = req.headers.get('X-Storage-Token')
-
-        # FIXME REMOVE
-        service_catalog = None
-        if req.headers.get('X-Service-Catalog') is not None:
+        catalog_header = headers.get('X-Service-Catalog')
+        if catalog_header is not None:
             try:
-                catalog_header = req.headers.get('X-Service-Catalog')
                 service_catalog = json.loads(catalog_header)
-                print 'service_catalog, PLEASE REMOVE:', service_catalog
             except ValueError:
-                raise webob.exc.HTTPInternalServerError(
-                    'Invalid service catalog json.')
+                raise webob.exc.HTTPInternalServerError('Invalid server '
+                                                        'catalog json')
 
         kwargs = {
-            'auth_token': req.headers.get('X-Auth-Token', deprecated_token),
+            'auth_token': headers.get('X-Auth-Token', deprecated_token),
             'user': req.headers.get('X-User-Id'),
             'tenant': req.headers.get('X-Tenant-Id'),
             'is_admin': CONF.admin_role.strip().lower() in roles,
+            'service_catalog': service_catalog,
         }
 
-        return openstack.common.context.RequestContext(**kwargs)
+        return context.RequestContext(**kwargs)
 
 
 class UnauthenticatedContextMiddleware(BaseContextMiddleware):
 
     def process_request(self, req):
-        req.context = _get_anonymous_context()
+        req.context = self._get_anonymous_context()
         return None
